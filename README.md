@@ -8,12 +8,63 @@ AI Attribution Dashboard 是一个轻量级的 AI 代码归因数据接收与可
 
 ## 快速开始
 
-### 环境要求
+### 方式一：Docker 部署（推荐）
+
+#### 环境要求
+
+- Docker >= 20
+
+#### 一键部署
+
+```bash
+# 下载部署脚本
+curl -fsSL https://raw.githubusercontent.com/fuzhengwei/WaLiCode-Git-AI-Statistics/main/deploy.sh -o deploy.sh
+chmod +x deploy.sh
+
+# 默认 3000 端口部署
+./deploy.sh
+
+# 或指定端口
+./deploy.sh 8080
+```
+
+#### 手动部署
+
+```bash
+# 拉取镜像
+docker pull registry.cn-hangzhou.aliyuncs.com/fuzhengwei/walicode-git-ai-statistics:1.0.0
+
+# 启动容器
+docker run -d \
+  --name ai-attribution-dashboard \
+  -p 3000:3000 \
+  -v ai-attribution-dashboard-data:/app/data \
+  --restart unless-stopped \
+  registry.cn-hangzhou.aliyuncs.com/fuzhengwei/walicode-git-ai-statistics:1.0.0
+```
+
+#### Docker 管理命令
+
+```bash
+# 查看日志
+docker logs -f ai-attribution-dashboard
+
+# 停止服务
+docker stop ai-attribution-dashboard
+
+# 启动服务
+docker start ai-attribution-dashboard
+
+# 卸载（含数据）
+docker rm -f ai-attribution-dashboard && docker volume rm ai-attribution-dashboard-data
+```
+
+### 方式二：源码运行
+
+#### 环境要求
 
 - Node.js >= 18
 - npm >= 9
-
-### 安装与运行
 
 ```bash
 # 安装依赖
@@ -67,7 +118,47 @@ npm run start
 - 服务信息
 - 数据管理（导出 / 清空）
 
-## Webhook 接口
+## 部署后使用指南
+
+### 1. 访问后台面板
+
+部署成功后，浏览器打开：
+
+```
+http://<服务器IP>:3000
+```
+
+如果是本机部署，直接访问 `http://localhost:3000`
+
+面板包含四个页面：
+- **数据总览** — 核心指标卡片、趋势图、最近提交
+- **归因记录** — 完整记录列表，支持搜索/筛选/删除/导出
+- **统计分析** — 意图分布、作者贡献、模型使用、工具分布
+- **设置** — Webhook 配置信息、服务状态、数据管理
+
+### 2. 配置 Webhook
+
+在「设置」页面可以看到 Webhook 端点地址：
+
+```
+http://<服务器IP>:3000/webhook/ai-attribution
+```
+
+#### 在 WaLiCode 中配置
+
+将上述地址填入 WaLiCode 的归因上报配置中，WaLiCode 会在每次 Git 提交时自动推送归因数据。
+
+#### 手动测试 Webhook
+
+```bash
+curl -X POST http://localhost:3000/webhook/ai-attribution \
+  -H "Content-Type: application/json" \
+  -d '{"event":"test","test":true}'
+```
+
+返回 `{"success":true}` 表示连接正常。
+
+### 3. Webhook 数据格式
 
 ```
 POST /webhook/ai-attribution
@@ -92,13 +183,7 @@ Content-Type: application/json
 }
 ```
 
-### 测试连接
-
-```bash
-curl -X POST http://localhost:3000/webhook/ai-attribution \
-  -H "Content-Type: application/json" \
-  -d '{"event":"test","test":true}'
-```
+WaLiCode 提交代码时自动触发，无需手动调用。
 
 ## API 列表
 
@@ -132,6 +217,10 @@ curl -X POST http://localhost:3000/webhook/ai-attribution \
 ├── data/                       # 运行时数据（gitignore）
 │   └── records.json            # 数据文件
 ├── dist/                       # 构建产物（gitignore）
+├── Dockerfile                  # Docker 多阶段构建
+├── deploy.sh                   # 一键部署脚本
+├── .github/workflows/
+│   └── docker-push.yml         # GitHub Actions CI/CD
 ├── tailwind.config.js
 ├── postcss.config.js
 ├── vite.config.ts
@@ -150,6 +239,15 @@ curl -X POST http://localhost:3000/webhook/ai-attribution \
 | 后端 | Express 4 |
 | 语言 | TypeScript |
 | 存储 | JSON 文件 |
+
+## Docker 镜像
+
+| 镜像 | 说明 |
+|------|------|
+| `registry.cn-hangzhou.aliyuncs.com/fuzhengwei/walicode-git-ai-statistics:1.0.0` | 指定版本 |
+| `registry.cn-hangzhou.aliyuncs.com/fuzhengwei/walicode-git-ai-statistics:latest` | 最新版本 |
+
+CI/CD 通过 GitHub Actions 自动构建，push 到 `main` 分支即触发。
 
 ## License
 
