@@ -28,5 +28,5 @@ jobs:
           context: .
           push: true
           tags: |
-            registry.cn-hangzhou.aliyuncs.com/fuzhengwei/WaLiCode-Git-AI-Statistics:1.0.0
-            registry.cn-hangzhou.aliyuncs.com/fuzhengwei/WaLiCode-Git-AI-Statistics:latest
+            registry.cn-hangzhou.aliyuncs.com/fuzhengwei/walicode-git-ai-statistics:1.0.0
+            registry.cn-hangzhou.aliyuncs.com/fuzhengwei/walicode-git-ai-statistics:latest
