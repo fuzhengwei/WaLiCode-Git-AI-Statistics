@@ -23,7 +23,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/data ./data
+RUN mkdir -p /app/data
 
 EXPOSE 3000
 
